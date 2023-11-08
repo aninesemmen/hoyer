@@ -100,8 +100,6 @@ for row in wb.iter_rows(min_row=2, max_col=3):
         if cellCounter == 3:
             OutPrice = cell.value
             product = json.load(findPriceFromGtin(EAN))
-            print(EAN)
-            print(product)
             if product != []:
                 OutPriceOld = product[0]['price']
                 if OutPrice != OutPriceOld:
