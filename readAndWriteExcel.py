@@ -11,7 +11,7 @@ from methods import *
 dataframe1 = pd.read_excel('Test.xlsx')
 
 # Henter inn input-filen
-excelInputWorkBook = openpyxl.load_workbook('AW23 Main Fusalp import.xlsx')
+excelInputWorkBook = openpyxl.load_workbook('SS24 Pre Wood Wood import.xlsx')
 excelInputWorkSheet = excelInputWorkBook.worksheets[0]
 
 # Oppretter en excel-fil som skal brukes som look-up mot API'et til Front
@@ -100,10 +100,19 @@ for row in wb.iter_rows(min_row=2, max_col=3):
         if cellCounter == 3:
             OutPrice = cell.value
             product = json.load(findPriceFromGtin(EAN))
-            OutPriceOld = product[0]['price']
-            if OutPrice != OutPriceOld:
-                wb.cell(rowCounter, 4, "Yes")
-                wb.cell(rowCounter, 6, OutPriceOld)
+            print(EAN)
+            print(product)
+            if product != []:
+                OutPriceOld = product[0]['price']
+                if OutPrice != OutPriceOld:
+                    wb.cell(rowCounter, 4, "Yes")
+                    wb.cell(rowCounter, 6, OutPriceOld)
+                    rowCounter += 1
+                else:
+                    wb.cell(rowCounter, 4, "No")
+                    rowCounter += 1
+            else:
+                wb.cell(rowCounter, 4, "New product")
                 rowCounter += 1
 
             cellCounter = 0
