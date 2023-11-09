@@ -8,8 +8,6 @@ import certifi
 import ssl
 from methods import *
 
-dataframe1 = pd.read_excel('Test.xlsx')
-
 # Henter inn input-filen
 excelInputWorkBook = openpyxl.load_workbook('SS24 Pre Wood Wood import.xlsx')
 excelInputWorkSheet = excelInputWorkBook.worksheets[0]
@@ -21,11 +19,15 @@ checkUpWorkSheet = excelCheckUp.add_worksheet()
 #Legger inn overskrifter i excel-filen som skal brukes som look-up mot Front sitt API og som skal bli output-fil til slutt
 
 checkUpWorkSheet.write('A1', 'EAN')
-checkUpWorkSheet.write('B1', 'InPriceNew')
-checkUpWorkSheet.write('C1', 'OutPriceNew')
-checkUpWorkSheet.write('D1', 'Changed?')
-checkUpWorkSheet.write('E1', 'InPriceBefore')
-checkUpWorkSheet.write('F1', 'OutPriceBefore')
+checkUpWorkSheet.write('B1', 'In price changed?')
+checkUpWorkSheet.write('C1', 'InPriceNew')
+checkUpWorkSheet.write('D1', 'InPriceBefore')
+checkUpWorkSheet.write('E1', 'Out price change?')
+checkUpWorkSheet.write('F1', 'OutPriceNew')
+checkUpWorkSheet.write('G1', 'OutPriceBefore')
+checkUpWorkSheet.write('H1', 'Season changed?')
+checkUpWorkSheet.write('I1', 'SeasonNew')
+checkUpWorkSheet.write('J1', 'SeasonBefore')
 
 # Lager variabler for rad og kolonne for EAN til checkup-filen
 eanRow = 1
@@ -33,11 +35,14 @@ eanColumn = 0
 
 # Lager variabler for rad og kolonne for innpris før til checkup-filen
 inPriceRow = 1
-inPriceColumn = 1
+inPriceColumn = 2
 
 # Lager variabler for rad og kolonne for utpris før til checkup-filen
 outPriceRow = 1
-outPriceColumn = 2
+outPriceColumn = 5
+
+seasonRow = 1
+seasonColumn = 8
 
 """
     workbook = xlsxwriter.Workbook('Example.xlsx')
@@ -69,6 +74,13 @@ for column in excelInputWorkSheet.iter_cols():
             checkUpWorkSheet.write(outPriceRow, outPriceColumn, cell.value)
             outPriceRow += 1 
 
+    if column_name == "Season":
+        for cell in column:
+            if cell.value == "Season":
+                continue
+            checkUpWorkSheet.write(seasonRow, seasonColumn, str(cell.value))
+            seasonRow += 1 
+
 
 excelCheckUp.close()
 
@@ -90,30 +102,43 @@ wb = workbookOutput.active
 cellCounter = 1
 rowCounter = 2
 
-for row in wb.iter_rows(min_row=2, max_col=3):
-    EAN = ""
-    OutPrice = 0
+for row in wb.iter_rows(min_row=2, max_col=10):
+    ProductFromFront = []
     for cell in row:
         if cellCounter == 1:
             EAN = str(cell.value)
+            ProductFromFront = json.load(findPriceFromGtin(EAN))
+            if ProductFromFront == []:
+                wb.cell(rowCounter, 2, "New product")
+                rowCounter += 1
+                break
+            else:
+                wb.cell(rowCounter, 2, ProductFromFront[0]['productid'])
 
         if cellCounter == 3:
-            OutPrice = cell.value
-            product = json.load(findPriceFromGtin(EAN))
-            if product != []:
-                OutPriceOld = product[0]['price']
-                if OutPrice != OutPriceOld:
-                    wb.cell(rowCounter, 4, "Yes")
-                    wb.cell(rowCounter, 6, OutPriceOld)
-                    rowCounter += 1
-                else:
-                    wb.cell(rowCounter, 4, "No")
-                    rowCounter += 1
-            else:
-                wb.cell(rowCounter, 4, "New product")
-                rowCounter += 1
+            InPriceNew = cell.value
 
-            cellCounter = 0
+        if cellCounter == 6:
+            OutPriceNew = cell.value
+            OutPriceOld = ProductFromFront[0]['price']
+            if OutPriceNew != OutPriceOld:
+                wb.cell(rowCounter, 5, "Yes")
+                wb.cell(rowCounter, 7, OutPriceOld)
+            else:
+                wb.cell(rowCounter, 5, "No")
+    
+        if cellCounter == 9:
+            SeasonNew = cell.value
+            SeasonOld = ProductFromFront[0]['season']
+            if SeasonNew != SeasonOld:
+                wb.cell(rowCounter, 8, "Yes")
+                wb.cell(rowCounter, 10, SeasonOld)
+            else:
+                wb.cell(rowCounter, 8, "No")
+            
+            cellCounter = 1
+            rowCounter += 1
+            break
 
         cellCounter += 1
 
