@@ -19,15 +19,16 @@ checkUpWorkSheet = excelCheckUp.add_worksheet()
 #Legger inn overskrifter i excel-filen som skal brukes som look-up mot Front sitt API og som skal bli output-fil til slutt
 
 checkUpWorkSheet.write('A1', 'EAN')
-checkUpWorkSheet.write('B1', 'In price changed?')
-checkUpWorkSheet.write('C1', 'InPriceNew')
-checkUpWorkSheet.write('D1', 'InPriceBefore')
-checkUpWorkSheet.write('E1', 'Out price change?')
-checkUpWorkSheet.write('F1', 'OutPriceNew')
-checkUpWorkSheet.write('G1', 'OutPriceBefore')
-checkUpWorkSheet.write('H1', 'Season changed?')
-checkUpWorkSheet.write('I1', 'SeasonNew')
-checkUpWorkSheet.write('J1', 'SeasonBefore')
+checkUpWorkSheet.write('B1', 'New Product / Product ID')
+checkUpWorkSheet.write('C1', 'In price changed?')
+checkUpWorkSheet.write('D1', 'InPriceNew')
+checkUpWorkSheet.write('E1', 'InPriceBefore')
+checkUpWorkSheet.write('F1', 'Out price change?')
+checkUpWorkSheet.write('G1', 'OutPriceNew')
+checkUpWorkSheet.write('H1', 'OutPriceBefore')
+checkUpWorkSheet.write('I1', 'Season changed?')
+checkUpWorkSheet.write('J1', 'SeasonNew')
+checkUpWorkSheet.write('K1', 'SeasonBefore')
 
 # Lager variabler for rad og kolonne for EAN til checkup-filen
 eanRow = 1
@@ -35,14 +36,14 @@ eanColumn = 0
 
 # Lager variabler for rad og kolonne for innpris før til checkup-filen
 inPriceRow = 1
-inPriceColumn = 2
+inPriceColumn = 3
 
 # Lager variabler for rad og kolonne for utpris før til checkup-filen
 outPriceRow = 1
-outPriceColumn = 5
+outPriceColumn = 6
 
 seasonRow = 1
-seasonColumn = 8
+seasonColumn = 9
 
 """
     workbook = xlsxwriter.Workbook('Example.xlsx')
@@ -99,10 +100,16 @@ excelCheckUp.close()
 workbookOutput = openpyxl.load_workbook("CheckUp.xlsx")
 wb = workbookOutput.active
 
+# Variables som ikke er brukt enda, prøver å finne en bedre løsning på å få satt riktig info i riktig kolonne i for-løkken under istedenfor å hard-kode kolonneindeks
+columnCount = wb.max_column
+eanColumn = columnCount - (columnCount-1)
+infoColumn = columnCount - (columnCount-2)
+inPriceChangeColumn = columnCount - (columnCount-3)
+
 cellCounter = 1
 rowCounter = 2
 
-for row in wb.iter_rows(min_row=2, max_col=10):
+for row in wb.iter_rows(min_row=2, max_col=columnCount):
     ProductFromFront = []
     for cell in row:
         if cellCounter == 1:
@@ -115,26 +122,35 @@ for row in wb.iter_rows(min_row=2, max_col=10):
             else:
                 wb.cell(rowCounter, 2, ProductFromFront[0]['productid'])
 
-        if cellCounter == 3:
+        if cellCounter == 4:
             InPriceNew = cell.value
+            InPriceOld = ProductFromFront[0]['cost']
+            if InPriceNew != InPriceOld:
+                wb.cell(rowCounter, 3, "Yes")
+            else:
+                wb.cell(rowCounter, 3, "No")
 
-        if cellCounter == 6:
+            wb.cell(rowCounter, 5, InPriceOld)
+
+        if cellCounter == 7:
             OutPriceNew = cell.value
             OutPriceOld = ProductFromFront[0]['price']
             if OutPriceNew != OutPriceOld:
-                wb.cell(rowCounter, 5, "Yes")
-                wb.cell(rowCounter, 7, OutPriceOld)
+                wb.cell(rowCounter, 6, "Yes")
             else:
-                wb.cell(rowCounter, 5, "No")
+                wb.cell(rowCounter, 6, "No")
+
+            wb.cell(rowCounter, 8, OutPriceOld)
     
-        if cellCounter == 9:
+        if cellCounter == 10:
             SeasonNew = cell.value
             SeasonOld = ProductFromFront[0]['season']
             if SeasonNew != SeasonOld:
-                wb.cell(rowCounter, 8, "Yes")
-                wb.cell(rowCounter, 10, SeasonOld)
+                wb.cell(rowCounter, 9, "Yes")
             else:
-                wb.cell(rowCounter, 8, "No")
+                wb.cell(rowCounter, 9, "No")
+
+            wb.cell(rowCounter, 11, SeasonOld)
             
             cellCounter = 1
             rowCounter += 1
