@@ -9,12 +9,13 @@ import ssl
 from methods import *
 
 # Henter inn input-filen
-excelInputWorkBook = openpyxl.load_workbook('SS24 Pre Wood Wood import.xlsx')
+excelInputWorkBook = openpyxl.load_workbook('SS24 Main Ganni import.xlsx', data_only=True)
 excelInputWorkSheet = excelInputWorkBook.worksheets[0]
 
 # Oppretter en excel-fil som skal brukes som look-up mot API'et til Front
 excelCheckUp = xlsxwriter.Workbook("CheckUp.xlsx")
 checkUpWorkSheet = excelCheckUp.add_worksheet()
+
 
 #Legger inn overskrifter i excel-filen som skal brukes som look-up mot Front sitt API og som skal bli output-fil til slutt
 
@@ -58,13 +59,20 @@ for column in excelInputWorkSheet.iter_cols():
         for cell in column:
             if cell.value == "EAN":
                 continue
-            checkUpWorkSheet.write(eanRow, eanColumn, cell.value)
+
+            EAN = str(cell.value)
+            if len(EAN) < 13 and EAN != 'None':
+                EAN = "0" + EAN
+                
+            if EAN != 'None':
+                checkUpWorkSheet.write(eanRow, eanColumn, EAN)
             eanRow += 1
 
     if column_name == "InPrice":
         for cell in column:
             if cell.value == "InPrice":
                 continue
+
             checkUpWorkSheet.write(inPriceRow, inPriceColumn, cell.value)
             inPriceRow += 1
 
@@ -79,11 +87,15 @@ for column in excelInputWorkSheet.iter_cols():
         for cell in column:
             if cell.value == "Season":
                 continue
-            checkUpWorkSheet.write(seasonRow, seasonColumn, str(cell.value))
+
+            season = str(cell.value)
+            if season != 'None':
+                checkUpWorkSheet.write(seasonRow, seasonColumn, season)
             seasonRow += 1 
 
 
 excelCheckUp.close()
+print("Excel er laget")
 
 # Neste her er å bruke API'et til Front for å
 # 1) Finne ut om produktet ligger i Front fra før
@@ -110,6 +122,7 @@ cellCounter = 1
 rowCounter = 2
 
 for row in wb.iter_rows(min_row=2, max_col=columnCount):
+    print(rowCounter)
     ProductFromFront = []
     for cell in row:
         if cellCounter == 1:
