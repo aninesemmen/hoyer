@@ -53,3 +53,21 @@ def findPriceFromGtin(gtin):
     except Exception as e:
         print(e)
 
+
+def deleteProductsFromProductId(productids):
+    try:
+        url = "https://frontsystemsapis.frontsystems.no/restapi/V2/api/products"
+
+        hdr ={
+        # Request headers
+        'x-api-key': 'rSzTE8K.4PYkiCCRpFS89sfyhD6QFvSKJrvsc8Gi',
+        'Cache-Control': 'no-cache',
+        'Ocp-Apim-Subscription-Key': 'ba812cd412304d1daa83c558113acacc',
+        }
+
+        productids_json = json.dumps(productids)
+        response = requests.delete(url=url, headers=hdr, data=productids_json)
+        print(response)
+       
+    except Exception as e:
+        print(e)

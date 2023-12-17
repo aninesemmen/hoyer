@@ -8,15 +8,15 @@ import os
 from methods import *
 
 # Henter input fra argument som er med når scriptet kjøres
-#parser = argparse.ArgumentParser(description="Filnavn for inputfil")
-#parser.add_argument("filename", help="Skriv inn filnavnet til input-filen som første argument")
-#parser.add_argument("outputDirectory", help="Spesifiser filsti til hvor du vil at output-fil skal lagres")
-#args = parser.parse_args()
+parser = argparse.ArgumentParser(description="Filnavn for inputfil")
+parser.add_argument("filename", help="Skriv inn filnavnet til input-filen som første argument")
+parser.add_argument("outputDirectory", help="Spesifiser filsti til hvor du vil at output-fil skal lagres")
+args = parser.parse_args()
 
-#excelInputFileName = args.filename
+excelInputFileName = args.filename
 
 # Henter inn import-fil, altså den filen som skal sjekkes, lagrer først navnet på filen i en variabel her, dette må da endres manuelt avhengig av hvilken fil som skal sjekkes 
-excelInputFileName = 'SS24 Main Scandinavian Edition import.xlsx'
+# excelInputFileName = 'SS24 Main_AW24 Calvin Klein import.xlsx'
 
 excelInputWorkBook = openpyxl.load_workbook(excelInputFileName, data_only=True)
 excelInputWorkSheet = excelInputWorkBook.worksheets[0]
@@ -228,13 +228,13 @@ for row in wb.iter_rows(min_row=2, max_col=columnCount):
         cellCounter += 1
 
 outputFileName = "FinalOutput_" + excelInputFileName
-#outputDirectory = args.outputDirectory
+outputDirectory = args.outputDirectory
 if os.path.isfile(outputFileName):
     os.remove(outputFileName)
 
 if os.path.isfile(lookUpFileName):
     os.remove(lookUpFileName)
 
-#workbookOutput.save("outputDirectory"+"/"+outputFileName)
+workbookOutput.save("outputDirectory"+"/"+outputFileName)
 workbookOutput.save("OutputFiles/"+outputFileName)
 print("Final output er laget")
